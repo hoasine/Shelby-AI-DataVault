@@ -25,7 +25,6 @@ import {
   type AboutAptosConnectEducationScreen,
   AdapterWallet,
   AdapterNotDetectedWallet,
-  AptosPrivacyPolicy,
   WalletItem,
   groupAndSortWallets,
   isAptosConnectWallet,
@@ -111,9 +110,7 @@ interface ConnectWalletDialogProps {
 
 function ConnectWalletDialog({ close }: ConnectWalletDialogProps) {
   const { wallets = [], notDetectedWallets = [] } = useWallet();
-  const { aptosConnectWallets, availableWallets, installableWallets } = groupAndSortWallets([...wallets, ...notDetectedWallets]);
-
-  const hasAptosConnectWallets = !!aptosConnectWallets.length;
+  const { availableWallets, installableWallets } = groupAndSortWallets([...wallets, ...notDetectedWallets]);
 
   return (
     <DialogContent className="max-h-screen overflow-auto">
@@ -174,19 +171,6 @@ function WalletRow({ wallet, onConnect }: WalletRowProps) {
           <Button size="sm">Connect</Button>
         </WalletItem.ConnectButton>
       )}
-    </WalletItem>
-  );
-}
-
-function AptosConnectWalletRow({ wallet, onConnect }: WalletRowProps) {
-  return (
-    <WalletItem wallet={wallet} onConnect={onConnect}>
-      <WalletItem.ConnectButton asChild>
-        <Button size="lg" variant="outline" className="w-full gap-4">
-          <WalletItem.Icon className="h-5 w-5" />
-          <WalletItem.Name className="text-base font-normal" />
-        </Button>
-      </WalletItem.ConnectButton>
     </WalletItem>
   );
 }

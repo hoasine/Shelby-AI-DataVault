@@ -45,3 +45,5 @@ public/workbox-*.js
 
 # TypeScript build cache
 tsconfig.tsbuildinfo
+
+.vercel
