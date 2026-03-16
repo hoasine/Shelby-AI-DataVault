@@ -1,0 +1,2 @@
+{"id": "sample_001", "text": "Shelby Labs announced new features in Tokyo.", "tokens": ["Shelby", "Labs", "announced", "new", "features", "in", "Tokyo", "."], "labels": ["B-ORG", "I-ORG", "O", "O", "O", "O", "B-LOC", "O"]}
+{"id": "sample_002", "text": "CEO John Smith presented at Web3 Summit 2024.", "tokens": ["CEO", "John", "Smith", "presented", "at", "Web3", "Summit", "2024", "."], "labels": ["O", "B-PER", "I-PER", "O", "O", "B-EVENT", "I-EVENT", "I-EVENT", "O"]}

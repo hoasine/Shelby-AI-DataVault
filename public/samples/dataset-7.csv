@@ -1,0 +1,4 @@
+model_name,parameters_b,training_cost_usd,inference_ms,accuracy,release_date
+ShelbyLM-7B,7,50000,25,0.89,2024-01-15
+ShelbyLM-13B,13,120000,45,0.92,2024-02-20
+ShelbyLM-70B,70,850000,180,0.96,2024-03-10

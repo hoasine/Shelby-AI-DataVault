@@ -1,0 +1,3 @@
+{"prompt": "What is Shelby Protocol?", "response": "Shelby Protocol is a decentralized storage network that uses erasure coding to ensure data availability and integrity across distributed nodes.", "category": "web3"}
+{"prompt": "How does Aptos achieve high throughput?", "response": "Aptos uses parallel execution with Block-STM, allowing concurrent transaction processing while maintaining safety through optimistic concurrency control.", "category": "blockchain"}
+{"prompt": "Explain the benefits of on-chain data ownership.", "response": "On-chain ownership provides verifiable provenance, censorship resistance, and programmable access control through smart contracts.", "category": "web3"}

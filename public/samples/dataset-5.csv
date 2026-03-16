@@ -1,0 +1,4 @@
+nodes,storage_tb,latency_ms,uptime_percent,throughput_mbps,cost_monthly,region
+50,100,12,99.95,850,2500,us-east
+75,200,15,99.92,720,4200,eu-west
+100,500,18,99.98,950,8500,asia-pacific

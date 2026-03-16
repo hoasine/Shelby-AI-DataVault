@@ -1,0 +1,4 @@
+wallet_address,transactions,volume_apt,first_seen,last_active,risk_score
+0x1a2b3c4d5e6f,150,2500.5,2024-01-01,2024-03-15,0.12
+0x7f8e9d0c1b2a,85,890.25,2024-02-10,2024-03-14,0.08
+0x3c4d5e6f7a8b,320,5200.75,2023-12-01,2024-03-15,0.15

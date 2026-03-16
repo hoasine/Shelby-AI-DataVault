@@ -1,0 +1,16 @@
+filename,label,label_id,confidence,split,width,height,annotator
+scene_001.png,autonomous_vehicle,0,0.96,train,1920,1080,team_alpha
+scene_002.png,pedestrian,1,0.94,train,1280,720,team_beta
+scene_003.png,traffic_sign,2,0.91,validation,1920,1080,team_alpha
+scene_004.png,autonomous_vehicle,0,0.98,train,2560,1440,team_gamma
+scene_005.png,cyclist,3,0.89,train,1920,1080,team_beta
+scene_006.png,pedestrian,1,0.95,test,1280,720,team_alpha
+scene_007.png,traffic_light,4,0.87,train,1920,1080,team_gamma
+scene_008.png,autonomous_vehicle,0,0.97,validation,2560,1440,team_beta
+scene_009.png,cyclist,3,0.92,train,1920,1080,team_alpha
+scene_010.png,pedestrian,1,0.93,train,1280,720,team_gamma
+scene_011.png,traffic_sign,2,0.88,test,1920,1080,team_beta
+scene_012.png,motorcycle,5,0.90,train,2560,1440,team_alpha
+scene_013.png,traffic_light,4,0.86,validation,1920,1080,team_gamma
+scene_014.png,autonomous_vehicle,0,0.99,train,1920,1080,team_beta
+scene_015.png,pedestrian,1,0.94,train,1280,720,team_alpha

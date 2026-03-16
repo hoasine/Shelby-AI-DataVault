@@ -1,0 +1,4 @@
+filename,label,label_id,confidence,split,width,height,annotator
+img_001.png,data_center,0,0.95,train,1920,1080,annotator_1
+img_002.png,server_rack,1,0.92,train,1280,720,annotator_2
+img_003.png,network_cable,2,0.89,validation,1920,1080,annotator_1

@@ -1,0 +1,4 @@
+blob_id,size_bytes,chunks,redundancy,upload_time_ms,downloads
+blob_001,1048576,16,1.6,450,125
+blob_002,5242880,32,1.6,1200,89
+blob_003,10485760,64,1.6,2400,234

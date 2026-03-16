@@ -1,0 +1,4 @@
+text,label,confidence,source
+"Shelby Protocol provides excellent data availability guarantees.",positive,0.96,review
+"The integration was seamless and documentation is clear.",positive,0.94,review
+"Average performance but room for improvement.",neutral,0.82,review

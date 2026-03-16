@@ -1,0 +1,4 @@
+contract_address,function_calls,gas_used,unique_users,tvl_usd,audit_score
+0xabc123,45000,125000000,1200,5500000,95
+0xdef456,28000,85000000,800,2800000,88
+0x789xyz,62000,180000000,2100,12000000,97
