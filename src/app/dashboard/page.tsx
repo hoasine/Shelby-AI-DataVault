@@ -8,7 +8,24 @@ import { MODULE_ADDRESS } from "@/constants";
 import { AccountAddress } from "@aptos-labs/ts-sdk";
 
 function normalizeAddr(addr: string): string {
-  try { return AccountAddress.fromString(addr).toString(); } catch { return addr.toLowerCase(); }
+  try { 
+    return AccountAddress.fromString(addr).toString(); 
+  } catch { 
+    return addr.toLowerCase(); 
+  }
+}
+
+function toHexString(addr: string): string {
+  try {
+    const normalized = AccountAddress.fromString(addr);
+    return normalized.toStringLong();
+  } catch {
+    let hex = addr.startsWith("0x") ? addr.slice(2) : addr;
+    if (hex.length % 2 !== 0) {
+      hex = "0" + hex;
+    }
+    return "0x" + hex.toLowerCase();
+  }
 }
 
 type Listing = {
@@ -49,7 +66,7 @@ async function fetchListings(ownerAddress: string): Promise<Listing[]> {
       });
       const datasetAddr = addr as string;
       const [id, owner, name, , sizeBytesRaw, priceRaw, downloadsRaw, isActive] = await aptos.view({
-        payload: { function: `${MODULE_ADDRESS}::dataset_registry::get_dataset_info`, typeArguments: [], functionArguments: [datasetAddr] },
+        payload: { function: `${MODULE_ADDRESS}::dataset_registry::get_dataset_info`, typeArguments: [], functionArguments: [toHexString(datasetAddr)] },
       }) as [number, string, string, string, number, number, number, boolean];
 
       console.log(`[dashboard] dataset ${i}: addr=${datasetAddr} owner=${owner} name=${name}`);
@@ -59,7 +76,7 @@ async function fetchListings(ownerAddress: string): Promise<Listing[]> {
       const price     = Number(priceRaw);
       const downloads = Number(downloadsRaw);
       const [earningsRaw] = await aptos.view({
-        payload: { function: `${MODULE_ADDRESS}::marketplace::get_seller_earnings`, typeArguments: [], functionArguments: [ownerAddress] },
+        payload: { function: `${MODULE_ADDRESS}::marketplace::get_seller_earnings`, typeArguments: [], functionArguments: [toHexString(ownerAddress)] },
       });
 
       const fmt = (b: number) =>
@@ -99,12 +116,12 @@ async function fetchPurchases(buyerAddress: string): Promise<Purchase[]> {
       });
       const datasetAddr = addr as string;
       const [hasAccess] = await aptos.view({
-        payload: { function: `${MODULE_ADDRESS}::marketplace::has_access`, typeArguments: [], functionArguments: [buyerAddress, datasetAddr] },
+        payload: { function: `${MODULE_ADDRESS}::marketplace::has_access`, typeArguments: [], functionArguments: [toHexString(buyerAddress), toHexString(datasetAddr)] },
       });
       if (!hasAccess) continue;
 
       const [id, owner, name, , sizeBytesRaw, priceRaw] = await aptos.view({
-        payload: { function: `${MODULE_ADDRESS}::dataset_registry::get_dataset_info`, typeArguments: [], functionArguments: [datasetAddr] },
+        payload: { function: `${MODULE_ADDRESS}::dataset_registry::get_dataset_info`, typeArguments: [], functionArguments: [toHexString(datasetAddr)] },
       }) as [number, string, string, string, number, number, number, boolean];
 
       if (normalizeAddr(owner as string) === normalizeAddr(buyerAddress)) continue;
