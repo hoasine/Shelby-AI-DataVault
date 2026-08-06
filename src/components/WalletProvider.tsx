@@ -20,7 +20,7 @@ export function WalletProvider({ children }: PropsWithChildren) {
         ...(APTOS_API_KEY
           ? { aptosApiKeys: { [NETWORK]: APTOS_API_KEY } as Record<string, string> }
           : {}),
-        ...(APTOS_NODE_URL ? { aptosNodeUrl: APTOS_NODE_URL } : {}),
+        aptosNodeUrl: APTOS_NODE_URL,
       }}
       onError={(error) => {
         toast({

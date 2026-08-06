@@ -6,17 +6,14 @@
 import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 import { APTOS_API_KEY, APTOS_NODE_URL } from "@/constants";
 
-const STAGING_NODE = "https://api.testnet.aptoslabs.com/v1";
-
 let _aptos: Aptos | null = null;
 
 export function getAptosServerClient(): Aptos {
   if (!_aptos) {
-    const nodeUrl = APTOS_NODE_URL ?? STAGING_NODE;
     _aptos = new Aptos(
       new AptosConfig({
         network: Network.TESTNET,
-        fullnode: nodeUrl,
+        fullnode: APTOS_NODE_URL,
         ...(APTOS_API_KEY
           ? { clientConfig: { API_KEY: APTOS_API_KEY } }
           : {}),
