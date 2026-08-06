@@ -15,8 +15,11 @@ export function WalletProvider({ children }: PropsWithChildren) {
       autoConnect={true}
       dappConfig={{
         network: NETWORK,
-        aptosApiKeys: { [NETWORK]: APTOS_API_KEY },
-        // Optional override for the Aptos marketplace node (testnet).
+        // Only pass a real Aptos testnet key. A Shelbynet key or placeholder
+        // makes getChainId() return plain-text "Permission denied..." and crash.
+        ...(APTOS_API_KEY
+          ? { aptosApiKeys: { [NETWORK]: APTOS_API_KEY } as Record<string, string> }
+          : {}),
         ...(APTOS_NODE_URL ? { aptosNodeUrl: APTOS_NODE_URL } : {}),
       }}
       onError={(error) => {

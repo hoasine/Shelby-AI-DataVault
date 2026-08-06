@@ -4,6 +4,7 @@
  * Blob storage itself is on Shelbynet (see src/lib/shelby.ts).
  */
 import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
+import { APTOS_API_KEY, APTOS_NODE_URL } from "@/constants";
 
 const STAGING_NODE = "https://api.testnet.aptoslabs.com/v1";
 
@@ -11,13 +12,13 @@ let _aptos: Aptos | null = null;
 
 export function getAptosServerClient(): Aptos {
   if (!_aptos) {
-    const nodeUrl = process.env.NEXT_PUBLIC_APTOS_NODE_URL ?? STAGING_NODE;
+    const nodeUrl = APTOS_NODE_URL ?? STAGING_NODE;
     _aptos = new Aptos(
       new AptosConfig({
         network: Network.TESTNET,
         fullnode: nodeUrl,
-        ...(process.env.NEXT_PUBLIC_APTOS_API_KEY
-          ? { clientConfig: { API_KEY: process.env.NEXT_PUBLIC_APTOS_API_KEY } }
+        ...(APTOS_API_KEY
+          ? { clientConfig: { API_KEY: APTOS_API_KEY } }
           : {}),
       })
     );
