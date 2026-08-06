@@ -113,16 +113,25 @@ export default function DatasetDetailClient() {
     setDownloading(true);
     setError(null);
     try {
-      const nonceRes = await fetch("/api/auth/nonce");
+      const nonceRes = await fetch("/api/auth/nonce", { cache: "no-store" });
       if (!nonceRes.ok) throw new Error("Failed to obtain download nonce.");
       const { nonce } = await nonceRes.json();
       const signed = await signMessage({ message: "Shelby AI DataVault download auth", nonce });
+      const usedNonce = signed.nonce || nonce;
+      const signature =
+        typeof signed.signature === "string"
+          ? signed.signature
+          : signed.signature.toString();
+      const publicKey = account.publicKey?.toString() || "";
+      if (!publicKey) throw new Error("Wallet did not provide a public key.");
+
       const res = await fetch(`/api/datasets/${datasetAddr}/download`, {
+        cache: "no-store",
         headers: {
           "x-buyer-address": account.address.toString(),
-          "x-nonce":         nonce,
-          "x-signature":     signed.signature.toString(),
-          "x-public-key":    account.publicKey?.toString() ?? "",
+          "x-nonce":         usedNonce,
+          "x-signature":     signature,
+          "x-public-key":    publicKey,
         },
       });
       if (!res.ok) {

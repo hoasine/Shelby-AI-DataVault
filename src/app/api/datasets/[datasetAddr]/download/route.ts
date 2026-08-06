@@ -23,6 +23,8 @@ import { consumeNonce } from "@/lib/nonceStore";
 import { getShelbyClient, parseBlobName } from "@/lib/shelby";
 import { checkOnChainAccess, getOnChainBlobName, getAptosServerClient } from "@/lib/aptosServer";
 
+export const dynamic = "force-dynamic";
+
 const MODULE_ADDRESS = process.env.NEXT_PUBLIC_MODULE_ADDRESS ?? "";
 
 // The fixed message text used in signMessage — must match the frontend exactly.

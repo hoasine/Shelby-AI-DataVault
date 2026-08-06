@@ -173,7 +173,7 @@ function StatCard({ label, value, sub, icon }: { label: string; value: string; s
 }
 
 export default function DashboardPage() {
-  const { account } = useWallet();
+  const { account, signMessage } = useWallet();
   const [tab,         setTab]        = useState<Tab>("listings");
   const [downloading, setDownloading] = useState<string | null>(null);
   const [dlError,     setDlError]    = useState<string | null>(null);
@@ -197,11 +197,32 @@ export default function DashboardPage() {
   const totalDownloads = listings.reduce((s, d) => s + d.downloads, 0);
 
   const handleDownload = async (datasetAddr: string, name: string) => {
-    if (!account) return;
+    if (!account || !signMessage) {
+      setDlError("Connect your wallet to download.");
+      return;
+    }
     setDlError(null); setDownloading(datasetAddr);
     try {
+      const nonceRes = await fetch("/api/auth/nonce", { cache: "no-store" });
+      if (!nonceRes.ok) throw new Error("Failed to obtain download nonce.");
+      const { nonce } = await nonceRes.json();
+      const signed = await signMessage({ message: "Shelby AI DataVault download auth", nonce });
+      const usedNonce = signed.nonce || nonce;
+      const signature =
+        typeof signed.signature === "string"
+          ? signed.signature
+          : signed.signature.toString();
+      const publicKey = account.publicKey?.toString() || "";
+      if (!publicKey) throw new Error("Wallet did not provide a public key.");
+
       const res = await fetch(`/api/datasets/${datasetAddr}/download`, {
-        headers: { "x-buyer-address": account.address.toString() },
+        cache: "no-store",
+        headers: {
+          "x-buyer-address": account.address.toString(),
+          "x-nonce": usedNonce,
+          "x-signature": signature,
+          "x-public-key": publicKey,
+        },
       });
       if (!res.ok) { const { error: msg } = await res.json(); throw new Error(msg ?? "Download failed"); }
       const blob = await res.blob();
