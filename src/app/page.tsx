@@ -124,7 +124,46 @@ export default function HomePage() {
               maxWidth: "720px",
             }}
           >
-          
+            {/* Shelbynet migration notice */}
+            <div
+              role="status"
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "0.75rem",
+                padding: "0.875rem 1rem",
+                background: "var(--accent-dim)",
+                border: "1px solid rgba(0, 212, 255, 0.28)",
+                borderRadius: "10px",
+                maxWidth: "560px",
+              }}
+            >
+              <span
+                style={{
+                  flexShrink: 0,
+                  marginTop: "2px",
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  background: "var(--accent-primary)",
+                  boxShadow: "0 0 8px var(--accent-primary)",
+                }}
+              />
+              <p
+                style={{
+                  margin: 0,
+                  fontFamily: "var(--font-body)",
+                  fontSize: "0.875rem",
+                  lineHeight: 1.5,
+                  color: "var(--text-secondary)",
+                }}
+              >
+                <strong style={{ color: "var(--accent-primary)", fontWeight: 600 }}>
+                  Now on Shelbynet.
+                </strong>{" "}
+                Blob storage has moved to Shelbynet (Shelby Protocol&apos;s testnet).
+              </p>
+            </div>
 
             {/* Headline */}
             <h1

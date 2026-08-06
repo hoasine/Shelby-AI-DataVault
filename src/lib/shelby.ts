@@ -6,20 +6,39 @@
  *   NEXT_MODULE_PUBLISHER_ACCOUNT_ADDRESS   — App account address on Shelbynet (blob owner)
  *   NEXT_MODULE_PUBLISHER_ACCOUNT_PRIVATE_KEY — Ed25519 private key for signing Shelby txs
  *
+ * Optional:
+ *   SHELBY_LOCATION_HINT — Activated location name (currently "shelbynet-1").
+ *
  * Architecture note:
- *   Shelbynet (chain ID 110) and Aptos testnet (chain ID 2) are different chains.
+ *   Shelbynet and Aptos testnet are different chains.
  *   The user's wallet signs Aptos testnet transactions (marketplace).
  *   The app's publisher key signs Shelbynet transactions (blob registration).
+ *
+ * SDK note (@shelby-protocol/sdk >= 0.6):
+ *   Network.TESTNET is no longer a valid Shelby network. Use Network.SHELBYNET.
+ *   Upload flow is register → UID → putBlobChunksets → commitObject.
+ *   Tx expireTimestamp must track Shelbynet ledger time — local clock skew
+ *   causes TRANSACTION_EXPIRATION_TOO_FAR_IN_FUTURE.
  */
 import { Network, Ed25519PrivateKey, Account } from "@aptos-labs/ts-sdk";
 import {
   ShelbyNodeClient,
+  ShelbyBlobClient,
+  createBlobKey,
+  createDefaultErasureCodingProvider,
+  generateCommitments,
+  requiredAckCount,
   type BlobCommitments,
   type ErasureCodingConfig,
 } from "@shelby-protocol/sdk/node";
 
-// Shelby testnet fullnode URL — Shelby runs its own Aptos-compatible chain.
-const SHELBY_TESTNET_FULLNODE = "https://api.testnet.shelby.xyz/v1";
+// Shelbynet coordination-layer fullnode (Aptos-compatible).
+const SHELBYNET_FULLNODE = "https://api.shelbynet.shelby.xyz/v1";
+// Default RPC from SDK constants (NetworkToShelbyRPCBaseUrl.shelbynet).
+const SHELBYNET_RPC = "https://shelby.shelbynet.shelby.xyz/shelby";
+
+/** Aptos rejects txns whose expireTimestamp is too far past ledger time. */
+const TX_EXPIRE_SKEW_SECS = 25;
 
 // ── Shelby client singleton ────────────────────────────────────────────────
 
@@ -39,7 +58,7 @@ function patchFetchForShelby(origin: string) {
         : input instanceof URL
           ? input.toString()
           : (input as Request).url;
-    if (url.includes("shelby.xyz")) {
+    if (url.includes("shelby.xyz") || url.includes("shelby.shelbynet")) {
       const existing = new Headers(init?.headers ?? {});
       if (!existing.has("Origin")) existing.set("Origin", origin);
       init = { ...init, headers: existing };
@@ -55,18 +74,24 @@ export function getShelbyClient(): ShelbyNodeClient {
     // NEXT_PUBLIC_APP_URL takes priority so you can override it explicitly.
     const vercelUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null;
     const origin = process.env.NEXT_PUBLIC_APP_URL ?? vercelUrl ?? "http://localhost:3000";
+    const locationHint = process.env.SHELBY_LOCATION_HINT;
 
     patchFetchForShelby(origin);
 
     _shelbyClient = new ShelbyNodeClient({
-      network: Network.TESTNET,
+      network: Network.SHELBYNET,
       ...(shelbyApiKey ? { apiKey: shelbyApiKey } : {}),
+      ...(locationHint ? { locationHint } : {}),
       aptos: {
-        network: Network.TESTNET,
-        fullnode: SHELBY_TESTNET_FULLNODE,
+        network: Network.SHELBYNET,
+        fullnode: SHELBYNET_FULLNODE,
         clientConfig: {
           HEADERS: { Origin: origin },
         },
+      },
+      rpc: {
+        baseUrl: SHELBYNET_RPC,
+        ...(shelbyApiKey ? { apiKey: shelbyApiKey } : {}),
       },
     });
   }
@@ -86,6 +111,124 @@ export function getMarketplaceSigner(): Account {
   const hexKey = rawKey.replace(/^ed25519-priv-/, "");
   const privateKey = new Ed25519PrivateKey(hexKey);
   return Account.fromPrivateKey({ privateKey });
+}
+
+// ── Chain-clock helpers ─────────────────────────────────────────────────────
+
+/** Shelbynet ledger time in unix seconds (not local wall clock). */
+export async function getShelbyChainTimeSecs(
+  shelby: ShelbyNodeClient = getShelbyClient()
+): Promise<number> {
+  const info = await shelby.aptos.getLedgerInfo();
+  return Math.floor(Number(info.ledger_timestamp) / 1_000_000);
+}
+
+/** Tx build options anchored to Shelbynet ledger time (avoids local clock skew). */
+async function chainAnchoredTxOptions(
+  shelby: ShelbyNodeClient,
+  withOrderlessNonce = false
+) {
+  const chainSec = await getShelbyChainTimeSecs(shelby);
+  return {
+    build: {
+      options: {
+        expireTimestamp: chainSec + TX_EXPIRE_SKEW_SECS,
+        ...(withOrderlessNonce
+          ? { replayProtectionNonce: crypto.getRandomValues(new Uint32Array(1))[0] }
+          : {}),
+      },
+    },
+  };
+}
+
+/**
+ * Full blob upload using chain-anchored tx expiration.
+ * Avoids `shelby.upload()` which sets commit expireTimestamp from local Date.now().
+ */
+export async function uploadBlobToShelby(params: {
+  blobData: Uint8Array;
+  blobName: string;
+  signer?: Account;
+  expirationMicros?: number;
+}): Promise<{ commitments: BlobCommitments }> {
+  const shelby = getShelbyClient();
+  const signer = params.signer ?? getMarketplaceSigner();
+  const expirationMicros = params.expirationMicros ?? defaultExpirationMicros();
+
+  const provider = await createDefaultErasureCodingProvider();
+  const commitments = await generateCommitments(provider, params.blobData);
+
+  const { transaction: pendingRegister } = await shelby.coordination.registerBlob({
+    account: signer,
+    blobName: params.blobName,
+    blobMerkleRoot: commitments.blob_merkle_root,
+    size: params.blobData.length,
+    expirationMicros,
+    config: provider.config,
+    options: await chainAnchoredTxOptions(shelby),
+  });
+
+  const registerTx = await shelby.aptos.waitForTransaction({
+    transactionHash: pendingRegister.hash,
+  });
+  if (!registerTx.success) {
+    throw new Error(`register_blob failed: ${registerTx.vm_status}`);
+  }
+
+  const objectName = createBlobKey({
+    account: signer.accountAddress,
+    blobName: params.blobName,
+  });
+  const events = "events" in registerTx ? registerTx.events : [];
+  const match = ShelbyBlobClient.registeredBlobUids(
+    events,
+    shelby.coordination.deployer
+  ).find((r) => r.objectName === objectName);
+  if (!match) {
+    throw new Error(`No BlobRegisteredEvent for '${params.blobName}' in ${pendingRegister.hash}`);
+  }
+
+  const { spAcks } = await shelby.rpc.putBlobChunksets({
+    account: signer,
+    uid: match.uid,
+    blobData: params.blobData,
+    commitments,
+    totalBytes: params.blobData.length,
+  });
+
+  const need = requiredAckCount(provider.config.erasure_n);
+  if (spAcks.length < need) {
+    throw new Error(
+      `Insufficient SP acks for '${params.blobName}': got ${spAcks.length}, need ${need}`
+    );
+  }
+
+  const { transaction: pendingCommit } = await shelby.coordination.commitObject({
+    account: signer,
+    uid: match.uid,
+    blobName: params.blobName,
+    overwrite: true,
+    storageProviderAcks: spAcks,
+    options: await chainAnchoredTxOptions(shelby, true),
+  });
+
+  const commitTx = await shelby.aptos.waitForTransaction({
+    transactionHash: pendingCommit.hash,
+  });
+  if (!commitTx.success) {
+    const rejected = ShelbyBlobClient.findObjectCommitRejection(
+      "events" in commitTx ? commitTx.events : [],
+      shelby.coordination.deployer,
+      match.uid
+    );
+    throw new Error(
+      rejected
+        ? `commit_object rejected for '${params.blobName}': ${rejected}`
+        : `commit_object failed for '${params.blobName}': ${commitTx.vm_status}`
+    );
+  }
+
+  return { commitments };
 }
 
 // ── Blob path helpers ───────────────────────────────────────────────────────

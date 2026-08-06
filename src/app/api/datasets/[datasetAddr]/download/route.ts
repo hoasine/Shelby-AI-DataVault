@@ -144,14 +144,14 @@ export async function GET(
 
   const { account, blobPath } = parseBlobName(fullBlobName);
 
-  // ── 5. Stream from Shelby ────────────────────────────────────────────────
+  // ── 5. Stream from Shelby (Shelbynet RPC) ────────────────────────────────
   const shelby = getShelbyClient();
 
-  let shelbyBlob: Awaited<ReturnType<typeof shelby.rpc.getBlob>>;
+  let shelbyBlob: Awaited<ReturnType<typeof shelby.download>>;
   try {
-    shelbyBlob = await shelby.rpc.getBlob({ account, blobName: blobPath });
+    shelbyBlob = await shelby.download({ account, blobName: blobPath });
   } catch (err) {
-    console.error("[download] Shelby RPC fetch failed:", err);
+    console.error("[download] Shelby download failed:", err);
     return NextResponse.json(
       { error: "Failed to retrieve dataset from storage." },
       { status: 502 }

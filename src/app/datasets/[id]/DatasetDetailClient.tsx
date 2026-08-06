@@ -402,7 +402,7 @@ export default function DatasetDetailClient() {
                 {[
                   { label: "Object Address", value: dataset.datasetAddr },
                   { label: "Owner", value: dataset.owner },
-                  { label: "Storage Layer", value: "shelby.xyz (Testnet)" },
+                  { label: "Storage Layer", value: "shelby.xyz (Shelbynet)" },
                   { label: "Erasure Coding", value: "Clay Codes (10 data + 6 parity)" },
                   { label: "Settlement", value: "Aptos Blockchain" },
                 ].map((row, i, arr) => (

@@ -1,6 +1,7 @@
 /**
  * Server-side Aptos client for view function calls (has_access, get_blob_name, etc.).
- * Uses the Aptos testnet staging node where Shelby is available.
+ * Points at Aptos testnet — the marketplace Move modules live here.
+ * Blob storage itself is on Shelbynet (see src/lib/shelby.ts).
  */
 import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 

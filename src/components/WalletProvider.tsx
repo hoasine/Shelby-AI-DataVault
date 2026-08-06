@@ -16,7 +16,7 @@ export function WalletProvider({ children }: PropsWithChildren) {
       dappConfig={{
         network: NETWORK,
         aptosApiKeys: { [NETWORK]: APTOS_API_KEY },
-        // Point the adapter at the staging testnet node where Shelby is available.
+        // Optional override for the Aptos marketplace node (testnet).
         ...(APTOS_NODE_URL ? { aptosNodeUrl: APTOS_NODE_URL } : {}),
       }}
       onError={(error) => {

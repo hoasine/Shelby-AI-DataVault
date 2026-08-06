@@ -395,7 +395,7 @@ NEXT_PUBLIC_MODULE_ADDRESS=0x7c897bf8eeac967ec590c57c5ab4464f683def2a7bd088e42a8
 NEXT_MODULE_PUBLISHER_ACCOUNT_ADDRESS=0x_YOUR_ADDRESS
 NEXT_MODULE_PUBLISHER_ACCOUNT_PRIVATE_KEY=ed25519-priv-0x_YOUR_PRIVATE_KEY
 
-# Shelby API key (from geomi.dev)
+# Shelby API key (from geomi.dev — network: shelbynet)
 SHELBY_API_KEY=AG-...
 NEXT_PUBLIC_SHELBY_API_KEY=AG-...
 
@@ -403,7 +403,7 @@ NEXT_PUBLIC_SHELBY_API_KEY=AG-...
 # OPTIONAL
 # ═══════════════════════════════════════════════════════════════════════
 
-# Aptos node URL (defaults to testnet)
+# Aptos node URL (defaults to testnet) — marketplace contracts
 NEXT_PUBLIC_APTOS_NODE_URL=https://api.testnet.staging.aptoslabs.com/v1
 
 # Aptos API key for higher rate limits
@@ -411,13 +411,16 @@ NEXT_PUBLIC_APTOS_API_KEY=aptoslabs_...
 
 # App URL (defaults to localhost:3000)
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Shelby write location hint (SDK 0.6+, e.g. us-east-1)
+# SHELBY_LOCATION_HINT=us-east-1
 ```
 
 ### Getting API Keys
 
 | Key | Where to Get |
 |-----|--------------|
-| Shelby API Key | https://geomi.dev → Create project → API Resource |
+| Shelby API Key | https://geomi.dev → Create project → API Resource → **shelbynet** |
 | Aptos API Key | https://build.aptoslabs.com → Create project → API key |
 | Publisher Key | Export from your Aptos wallet (Petra, Pontem, etc.) |
 
@@ -433,7 +436,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 | Module Address | `0x7c897bf8eeac967ec590c57c5ab4464f683def2a7bd088e42a889631d079e84f` |
 | Deploy TX | `0x643d85420052a40e18865940a286d12ae9e13c75401e621e1b8177e7795b7ea1` |
 | Node URL | `https://api.testnet.staging.aptoslabs.com/v1` |
-| Shelby Network | Shelbynet Testnet |
+| Shelby Network | Shelbynet (`api.shelbynet.shelby.xyz` / SDK `Network.SHELBYNET`) |
 
 ### Deploy to Vercel
 

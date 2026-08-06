@@ -215,14 +215,22 @@ export default function UploadPage() {
       setStatusMsg("Uploading to decentralized storage");
       setStatusDetail("Your file is being encoded and distributed across Shelby Protocol nodes.");
 
-      const form = new FormData();
-      form.append("file", file);
-      form.append("sellerAddress", sellerAddress);
-
-      const uploadRes = await fetch("/api/datasets/upload", { method: "POST", body: form });
+      // Send raw bytes + headers (not FormData). Wallet extensions (e.g. Petra)
+      // and Next.js both try structuredClone() on request init — FormData is
+      // not cloneable and throws DataCloneError. ArrayBuffer is fine.
+      const fileBytes = await file.arrayBuffer();
+      const uploadRes = await fetch("/api/datasets/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/octet-stream",
+          "x-seller-address": sellerAddress,
+          "x-filename": encodeURIComponent(file.name),
+        },
+        body: fileBytes,
+      });
       if (!uploadRes.ok) {
         const err = await uploadRes.json().catch(() => ({ error: "Upload failed" }));
-        throw new Error(err.error ?? "Upload failed");
+        throw new Error(err.error ?? err.detail ?? "Upload failed");
       }
       const { shelbyBlobName, commitmentBytes, blobSize } = await uploadRes.json();
 
@@ -880,24 +888,6 @@ export default function UploadPage() {
               </div>
             )}
 
-            {/* Error */}
-            {error && (
-              <div
-                style={{
-                  padding: "0.875rem 1rem",
-                  marginBottom: "1.5rem",
-                  background: "var(--error-dim)",
-                  border: "1px solid rgba(239, 68, 68, 0.25)",
-                  borderRadius: "8px",
-                  color: "var(--error)",
-                  fontFamily: "var(--font-body)",
-                  fontSize: "0.875rem",
-                }}
-              >
-                {error}
-              </div>
-            )}
-
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
               {/* File drop zone */}
               <div>
@@ -1091,8 +1081,26 @@ export default function UploadPage() {
                 </select>
               </div>
 
+              {/* Error — placed above submit so it stays in view after clicking */}
+              {error && (
+                <div
+                  role="alert"
+                  style={{
+                    padding: "0.875rem 1rem",
+                    background: "var(--error-dim)",
+                    border: "1px solid rgba(239, 68, 68, 0.25)",
+                    borderRadius: "8px",
+                    color: "var(--error)",
+                    fontFamily: "var(--font-body)",
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  {error}
+                </div>
+              )}
+
               {/* Submit */}
-              <div style={{ paddingTop: "0.5rem" }}>
+              <div style={{ paddingTop: "0.25rem" }}>
                 <button
                   type="submit"
                   disabled={isProcessing || !account}
