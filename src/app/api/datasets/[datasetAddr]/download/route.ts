@@ -42,7 +42,7 @@ function verifyDownloadAuth(
   publicKeyHex: string,
   signatureHex: string
 ): string | null {
-  // 1. Consume nonce — validates it exists, not expired, and prevents replay
+  // 1. Validate HMAC-signed nonce (expiry + server signature; works across serverless instances)
   if (!consumeNonce(nonce)) {
     return "Invalid or expired nonce. Request a new one and try again.";
   }
