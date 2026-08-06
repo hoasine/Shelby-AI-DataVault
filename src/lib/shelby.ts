@@ -7,7 +7,7 @@
  *   NEXT_MODULE_PUBLISHER_ACCOUNT_PRIVATE_KEY — Ed25519 private key for signing Shelby txs
  *
  * Optional:
- *   SHELBY_LOCATION_HINT — Activated location name (currently "shelbynet-1").
+ *   SHELBY_LOCATION_HINT — Write location (defaults to "shelbynet-1").
  *
  * Architecture note:
  *   Shelbynet and Aptos testnet are different chains.
@@ -74,14 +74,16 @@ export function getShelbyClient(): ShelbyNodeClient {
     // NEXT_PUBLIC_APP_URL takes priority so you can override it explicitly.
     const vercelUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null;
     const origin = process.env.NEXT_PUBLIC_APP_URL ?? vercelUrl ?? "http://localhost:3000";
-    const locationHint = process.env.SHELBY_LOCATION_HINT;
+    // Shelbynet currently has one activated write location. Default it so
+    // production (Vercel) works even when SHELBY_LOCATION_HINT is unset.
+    const locationHint = process.env.SHELBY_LOCATION_HINT || "shelbynet-1";
 
     patchFetchForShelby(origin);
 
     _shelbyClient = new ShelbyNodeClient({
       network: Network.SHELBYNET,
       ...(shelbyApiKey ? { apiKey: shelbyApiKey } : {}),
-      ...(locationHint ? { locationHint } : {}),
+      locationHint,
       aptos: {
         network: Network.SHELBYNET,
         fullnode: SHELBYNET_FULLNODE,
