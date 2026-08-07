@@ -44,10 +44,20 @@ export class ClientErrorBoundary extends Component<Props, State> {
             className="btn-primary"
             onClick={() => {
               this.setState({ hasError: false, message: "" });
+              window.location.href = "/reset";
+            }}
+          >
+            Clear cache & reload
+          </button>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => {
+              this.setState({ hasError: false, message: "" });
               window.location.reload();
             }}
           >
-            Reload page
+            Reload only
           </button>
         </div>
       );
