@@ -436,7 +436,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 | Field | Value |
 |-------|-------|
 | Network | **Shelbynet** (marketplace + blobs, chain ID 110) |
-| Module Address | Redeploy with `npm run move:publish` — old Aptos Testnet address is invalid |
+| Module Address | `0x5567ceefbbbf034ff79a2d2d4a43ebf4d9f5a4ce44cbf44eba97d09c6458cb2c` (Shelbynet) |
 | Node URL | `https://api.shelbynet.shelby.xyz/v1` |
 | Shelby RPC | `https://shelby.shelbynet.shelby.xyz/shelby` |
 

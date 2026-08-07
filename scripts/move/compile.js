@@ -1,4 +1,6 @@
+// Load from .env then .env.local so vars in either file are picked up.
 require("dotenv").config();
+require("dotenv").config({ path: ".env.local", override: true });
 const cli = require("@aptos-labs/ts-sdk/dist/common/cli/index.js");
 
 async function compile() {
