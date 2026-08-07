@@ -237,7 +237,8 @@ export default function DatasetDetailClient() {
   }
 
   const isFree = dataset.price === 0;
-  const canDownload = isFree || purchased || hasAccess;
+  // Free datasets still require on-chain purchase_dataset (0 APT) before download.
+  const canDownload = purchased || hasAccess;
 
   return (
     <div>
@@ -473,17 +474,32 @@ export default function DatasetDetailClient() {
                   Price
                 </div>
                 {isFree ? (
-                  <div
-                    style={{
-                      fontFamily: "var(--font-display)",
-                      fontWeight: 700,
-                      fontSize: "2.25rem",
-                      color: "var(--success)",
-                      lineHeight: 1,
-                    }}
-                  >
-                    Free
-                  </div>
+                  <>
+                    <div
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        fontWeight: 700,
+                        fontSize: "2.25rem",
+                        color: "var(--success)",
+                        lineHeight: 1,
+                      }}
+                    >
+                      Free
+                    </div>
+                    {!canDownload && (
+                      <p
+                        style={{
+                          marginTop: "0.75rem",
+                          fontFamily: "var(--font-body)",
+                          fontSize: "0.8125rem",
+                          color: "var(--text-tertiary)",
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        Sign a free on-chain claim (0 APT) to unlock download.
+                      </p>
+                    )}
+                  </>
                 ) : (
                   <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
                     <span
@@ -578,12 +594,14 @@ export default function DatasetDetailClient() {
                   }}
                 >
                   {!account ? (
-                    "Connect Wallet to Purchase"
+                    isFree ? "Connect Wallet to Get Free Access" : "Connect Wallet to Purchase"
                   ) : purchasing ? (
                     <>
                       <span style={{ display: "inline-block", animation: "spin 0.9s linear infinite" }}>◌</span>
                       Confirming Transaction...
                     </>
+                  ) : isFree ? (
+                    "Get Free Access"
                   ) : (
                     `Purchase for ${(dataset.price / 1e8).toFixed(2)} APT`
                   )}

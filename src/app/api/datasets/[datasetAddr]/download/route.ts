@@ -126,8 +126,28 @@ export async function GET(
   }
 
   if (!canAccess) {
+    let priceOctas = 0;
+    try {
+      const aptos = getAptosServerClient();
+      const [, , , , priceRaw] = await aptos.view({
+        payload: {
+          function: `${MODULE_ADDRESS}::dataset_registry::get_dataset_info`,
+          typeArguments: [],
+          functionArguments: [datasetAddr],
+        },
+      });
+      priceOctas = Number(priceRaw);
+    } catch {
+      // ignore — use generic message
+    }
+
     return NextResponse.json(
-      { error: "Access denied. Purchase this dataset first." },
+      {
+        error:
+          priceOctas === 0
+            ? "Claim free access first — sign the Get Free Access transaction in your wallet, then download."
+            : "Access denied. Purchase this dataset first.",
+      },
       { status: 403 }
     );
   }
