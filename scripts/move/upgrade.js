@@ -18,7 +18,10 @@ async function publish() {
       // Upgrade module from an object
       marketplace_addr: process.env.NEXT_PUBLIC_MODULE_ADDRESS,
     },
-    extraArguments: [`--private-key=${process.env.NEXT_MODULE_PUBLISHER_ACCOUNT_PRIVATE_KEY}`,`--url=${aptosSDK.NetworkToNodeAPI[process.env.NEXT_PUBLIC_APP_NETWORK]}`],
+    extraArguments: [
+        `--private-key=${process.env.NEXT_MODULE_PUBLISHER_ACCOUNT_PRIVATE_KEY}`,
+        `--url=${process.env.NEXT_PUBLIC_APTOS_NODE_URL ?? "https://api.shelbynet.shelby.xyz/v1"}`,
+      ],
   });
 }
 publish();

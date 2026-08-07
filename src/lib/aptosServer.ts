@@ -1,10 +1,10 @@
 /**
  * Server-side Aptos client for view function calls (has_access, get_blob_name, etc.).
- * Points at Aptos testnet — the marketplace Move modules live here.
- * Blob storage itself is on Shelbynet (see src/lib/shelby.ts).
+ * Marketplace Move modules live on Shelbynet (same chain as Shelby blob coordination).
+ * Blob storage RPC is in src/lib/shelby.ts.
  */
 import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
-import { APTOS_API_KEY, APTOS_NODE_URL } from "@/constants";
+import { APTOS_API_KEY, APTOS_NODE_URL, appOrigin } from "@/constants";
 
 let _aptos: Aptos | null = null;
 
@@ -12,11 +12,12 @@ export function getAptosServerClient(): Aptos {
   if (!_aptos) {
     _aptos = new Aptos(
       new AptosConfig({
-        network: Network.TESTNET,
+        network: Network.SHELBYNET,
         fullnode: APTOS_NODE_URL,
-        ...(APTOS_API_KEY
-          ? { clientConfig: { API_KEY: APTOS_API_KEY } }
-          : {}),
+        clientConfig: {
+          HEADERS: { Origin: appOrigin() },
+          ...(APTOS_API_KEY ? { API_KEY: APTOS_API_KEY } : {}),
+        },
       })
     );
   }

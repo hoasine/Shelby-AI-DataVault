@@ -1,11 +1,19 @@
-import { APTOS_API_KEY, APTOS_NODE_URL, NETWORK } from "@/constants";
-import { Aptos, AptosConfig } from "@aptos-labs/ts-sdk";
+import {
+  APTOS_API_KEY,
+  APTOS_NODE_URL,
+  appOrigin,
+  NETWORK,
+} from "@/constants";
+import { Aptos, AptosConfig, Network as AptosNetwork } from "@aptos-labs/ts-sdk";
 
 const aptos = new Aptos(
   new AptosConfig({
-    network: NETWORK,
-    ...(APTOS_NODE_URL ? { fullnode: APTOS_NODE_URL } : {}),
-    ...(APTOS_API_KEY ? { clientConfig: { API_KEY: APTOS_API_KEY } } : {}),
+    network: NETWORK as AptosNetwork,
+    fullnode: APTOS_NODE_URL,
+    clientConfig: {
+      HEADERS: { Origin: appOrigin() },
+      ...(APTOS_API_KEY ? { API_KEY: APTOS_API_KEY } : {}),
+    },
   }),
 );
 

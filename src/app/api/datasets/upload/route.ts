@@ -6,16 +6,14 @@
  * bytes so the client can submit the marketplace registration transaction.
  *
  * Architecture note:
- *   Shelbynet (chain ID 110) and Aptos testnet (chain ID 2) are different
- *   chains. The user's wallet can only be on one chain at a time, so:
- *     - Shelby blob registration → server signs on Shelbynet (this route)
- *     - Marketplace dataset registration → user's wallet signs on Aptos testnet
+ *   Marketplace and blob coordination both run on Shelbynet (chain ID 110).
+ *   Server signs blob registration; the seller's wallet signs marketplace registration.
  *
  * Request (preferred — avoids FormData DataCloneError from wallet extensions):
  *   Content-Type: application/octet-stream
  *   Body: raw file bytes
  *   Headers:
- *     x-seller-address — seller's Aptos testnet address
+ *     x-seller-address — seller's Shelbynet address
  *     x-filename       — URI-encoded original filename
  *
  * Legacy: multipart/form-data with `file` + `sellerAddress` fields.

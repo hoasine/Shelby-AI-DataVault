@@ -196,7 +196,7 @@ export function Header() {
                 background: "var(--success)",
               }}
             />
-            Testnet
+            Shelbynet
           </div>
           <WalletSelector />
         </div>

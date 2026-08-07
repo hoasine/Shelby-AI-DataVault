@@ -3,7 +3,7 @@
 <div align="center">
 
 ![Shelby AI DataVault](https://img.shields.io/badge/Shelby-AI%20DataVault-00d4ff?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTEyIDJMMyA3djEwbDkgNSA5LTV2LTEweiIvPjwvc3ZnPg==)
-![Aptos](https://img.shields.io/badge/Aptos-Testnet-4CAF50?style=for-the-badge)
+![Aptos](https://img.shields.io/badge/Network-Shelbynet-4CAF50?style=for-the-badge)
 ![Shelby Protocol](https://img.shields.io/badge/Shelby-Protocol-6366f1?style=for-the-badge)
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178c6?style=for-the-badge&logo=typescript)
@@ -403,11 +403,14 @@ NEXT_PUBLIC_SHELBY_API_KEY=AG-...
 # OPTIONAL
 # ═══════════════════════════════════════════════════════════════════════
 
-# Aptos node URL (defaults to testnet) — marketplace contracts
-NEXT_PUBLIC_APTOS_NODE_URL=https://api.testnet.staging.aptoslabs.com/v1
+# Aptos node URL — marketplace on Shelbynet (defaults in code)
+# NEXT_PUBLIC_APTOS_NODE_URL=https://api.shelbynet.shelby.xyz/v1
 
-# Aptos API key for higher rate limits
-NEXT_PUBLIC_APTOS_API_KEY=aptoslabs_...
+# Wallet network (defaults to shelbynet)
+# NEXT_PUBLIC_APP_NETWORK=shelbynet
+
+# Optional Geomi key for Shelbynet fullnode
+# NEXT_PUBLIC_APTOS_API_KEY=
 
 # App URL (defaults to localhost:3000)
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -432,11 +435,10 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 | Field | Value |
 |-------|-------|
-| Network | Aptos Testnet (staging) |
-| Module Address | `0x7c897bf8eeac967ec590c57c5ab4464f683def2a7bd088e42a889631d079e84f` |
-| Deploy TX | `0x643d85420052a40e18865940a286d12ae9e13c75401e621e1b8177e7795b7ea1` |
-| Node URL | `https://api.testnet.staging.aptoslabs.com/v1` |
-| Shelby Network | Shelbynet (`api.shelbynet.shelby.xyz` / SDK `Network.SHELBYNET`) |
+| Network | **Shelbynet** (marketplace + blobs, chain ID 110) |
+| Module Address | Redeploy with `npm run move:publish` — old Aptos Testnet address is invalid |
+| Node URL | `https://api.shelbynet.shelby.xyz/v1` |
+| Shelby RPC | `https://shelby.shelbynet.shelby.xyz/shelby` |
 
 ### Deploy to Vercel
 

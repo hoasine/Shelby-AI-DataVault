@@ -1,6 +1,7 @@
 "use client";
 
 import { WalletSelector } from "@/components/WalletSelector";
+import { NETWORK_LABEL } from "@/constants";
 
 interface TopHeaderProps {
   sidebarWidth?: string;
@@ -110,7 +111,7 @@ export function TopHeader({ sidebarWidth = "240px" }: TopHeaderProps) {
               animation: "pulse 2s ease-in-out infinite",
             }}
           />
-          Testnet
+          {NETWORK_LABEL}
         </div>
 
         {/* Wallet Selector */}

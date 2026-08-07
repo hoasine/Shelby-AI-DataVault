@@ -15,10 +15,7 @@ export function WalletProvider({ children }: PropsWithChildren) {
       autoConnect={true}
       dappConfig={{
         network: NETWORK,
-        // Only pass a real Aptos testnet key. A Shelbynet key or placeholder
-        // makes getChainId() return plain-text "Permission denied..." and crash.
-        // Custom fullnode URLs are not supported by DappConfig; server routes
-        // use APTOS_NODE_URL from src/constants.ts instead.
+        // Only pass a real Shelbynet/Geomi key. Placeholders break getChainId().
         ...(APTOS_API_KEY
           ? { aptosApiKeys: { [NETWORK]: APTOS_API_KEY } as Record<string, string> }
           : {}),

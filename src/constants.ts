@@ -1,4 +1,5 @@
-import type { Network } from "@aptos-labs/wallet-adapter-react";
+import { Network as AptosNetwork } from "@aptos-labs/ts-sdk";
+import type { Network as WalletNetwork } from "@aptos-labs/wallet-adapter-react";
 
 function publicEnv(value: string | undefined): string | undefined {
   if (!value) return undefined;
@@ -7,12 +8,32 @@ function publicEnv(value: string | undefined): string | undefined {
   return value;
 }
 
-/** Public Aptos testnet fullnode — avoids Geomi anonymous blocks on api.testnet.aptoslabs.com. */
-const DEFAULT_APTOS_TESTNET_FULLNODE = "https://fullnode.testnet.aptoslabs.com/v1";
+/** Shelbynet coordination-layer fullnode (Aptos-compatible). Marketplace + blobs live here. */
+export const SHELBYNET_FULLNODE = "https://api.shelbynet.shelby.xyz/v1";
 
-export const NETWORK: Network = (process.env.NEXT_PUBLIC_APP_NETWORK as Network) ?? "testnet";
+/** Shelby RPC base (blob reads/writes). */
+export const SHELBYNET_RPC = "https://shelby.shelbynet.shelby.xyz/shelby";
+
+export const SHELBYNET_CHAIN_ID = 110;
+
+export const NETWORK: WalletNetwork =
+  (process.env.NEXT_PUBLIC_APP_NETWORK as WalletNetwork) ?? AptosNetwork.SHELBYNET;
+
 export const MODULE_ADDRESS = publicEnv(process.env.NEXT_PUBLIC_MODULE_ADDRESS);
+
+/** Geomi / Aptos API key for Shelbynet fullnode (optional). Not the Shelby blob key. */
 export const APTOS_API_KEY = publicEnv(process.env.NEXT_PUBLIC_APTOS_API_KEY);
-/** Custom fullnode URL — defaults to the public Aptos testnet fullnode. */
+
+/** Fullnode for marketplace view/tx calls — defaults to Shelbynet. */
 export const APTOS_NODE_URL =
-  publicEnv(process.env.NEXT_PUBLIC_APTOS_NODE_URL) ?? DEFAULT_APTOS_TESTNET_FULLNODE;
+  publicEnv(process.env.NEXT_PUBLIC_APTOS_NODE_URL) ?? SHELBYNET_FULLNODE;
+
+/** Origin header required by Shelbynet API from server-side fetches. */
+export function appOrigin(): string {
+  if (typeof window !== "undefined") return window.location.origin;
+  const vercelUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null;
+  return process.env.NEXT_PUBLIC_APP_URL ?? vercelUrl ?? "http://localhost:3000";
+}
+
+/** Human-readable network label for UI. */
+export const NETWORK_LABEL = "Shelbynet";

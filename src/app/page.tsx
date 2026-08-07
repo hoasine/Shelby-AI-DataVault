@@ -161,7 +161,8 @@ export default function HomePage() {
                 <strong style={{ color: "var(--accent-primary)", fontWeight: 600 }}>
                   Now on Shelbynet.
                 </strong>{" "}
-                Blob storage has moved to Shelbynet (Shelby Protocol&apos;s testnet).
+                Marketplace and blob storage run on Shelby Protocol&apos;s Shelbynet (chain ID 110).
+                Connect your wallet to Shelbynet to list, buy, and download datasets.
               </p>
             </div>
 
@@ -689,7 +690,7 @@ export default function HomePage() {
                 }}
               >
                 <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--success)" }} />
-                Testnet
+                Shelbynet
               </span>
             </div>
           </div>

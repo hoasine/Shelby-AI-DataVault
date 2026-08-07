@@ -5,8 +5,8 @@ require("dotenv").config({ path: ".env.local", override: true });
 const fs = require("node:fs");
 const cli = require("@aptos-labs/ts-sdk/dist/common/cli/index.js");
 
-const STAGING_NODE = "https://api.testnet.staging.aptoslabs.com/v1";
-const nodeUrl = process.env.NEXT_PUBLIC_APTOS_NODE_URL ?? STAGING_NODE;
+const SHELBYNET_NODE = "https://api.shelbynet.shelby.xyz/v1";
+const nodeUrl = process.env.NEXT_PUBLIC_APTOS_NODE_URL ?? SHELBYNET_NODE;
 
 const publisherAddress = process.env.NEXT_MODULE_PUBLISHER_ACCOUNT_ADDRESS;
 const publisherKey     = process.env.NEXT_MODULE_PUBLISHER_ACCOUNT_PRIVATE_KEY;
