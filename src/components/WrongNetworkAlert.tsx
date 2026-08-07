@@ -1,13 +1,14 @@
 "use client";
 
 import { NETWORK, NETWORK_LABEL } from "@/constants";
+import { isExpectedWalletNetwork } from "@/utils/helpers";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
 export function WrongNetworkAlert() {
   const { network, connected } = useWallet();
 
-  return !connected || network?.name === NETWORK ? (
+  return !connected || isExpectedWalletNetwork(network) ? (
     <></>
   ) : (
     <Dialog.Root open={true}>
