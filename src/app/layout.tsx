@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { ReactQueryProvider } from "@/components/ReactQueryProvider";
 import { WalletProvider } from "@/components/WalletProvider";
+import { WalletAccountSync } from "@/components/WalletAccountSync";
 import { Toaster } from "@/components/ui/toaster";
 import { WrongNetworkAlert } from "@/components/WrongNetworkAlert";
 import { DashboardLayout } from "@/components/layout";
@@ -26,6 +27,7 @@ export default function RootLayout({
       <body>
         <WalletProvider>
           <ReactQueryProvider>
+            <WalletAccountSync />
             <DashboardLayout>
               <div id="root">{children}</div>
             </DashboardLayout>

@@ -1,6 +1,6 @@
 import { Network } from "@aptos-labs/ts-sdk";
 import { NetworkInfo, isAptosNetwork } from "@aptos-labs/wallet-adapter-react";
-import { NETWORK, SHELBYNET_CHAIN_ID } from "@/constants";
+import { NETWORK, SHELBYNET_CHAIN_IDS } from "@/constants";
 
 export const isValidNetworkName = (network: NetworkInfo | null) => {
   if (isAptosNetwork(network)) {
@@ -11,10 +11,12 @@ export const isValidNetworkName = (network: NetworkInfo | null) => {
   return true;
 };
 
-/** True when Petra/wallet is on Shelbynet (case-insensitive name or chain ID 110). */
+/** True when Petra/wallet is on Shelbynet (case-insensitive name or known chain IDs). */
 export function isExpectedWalletNetwork(network: NetworkInfo | null | undefined): boolean {
   if (!network) return false;
-  if (network.chainId === SHELBYNET_CHAIN_ID) return true;
+  if (network.chainId != null && SHELBYNET_CHAIN_IDS.includes(network.chainId as (typeof SHELBYNET_CHAIN_IDS)[number])) {
+    return true;
+  }
   if (network.name?.toLowerCase() === NETWORK.toLowerCase()) return true;
   if (network.url?.toLowerCase().includes("shelbynet")) return true;
   return false;

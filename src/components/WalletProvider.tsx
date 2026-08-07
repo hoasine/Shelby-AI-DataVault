@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { APTOS_API_KEY, NETWORK } from "@/constants";
 import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
 import type { PropsWithChildren } from "react";
+import { WalletScopedRemount } from "@/components/WalletAccountSync";
 
 export function WalletProvider({ children }: PropsWithChildren) {
   const { toast } = useToast();
@@ -13,6 +14,7 @@ export function WalletProvider({ children }: PropsWithChildren) {
   return (
     <AptosWalletAdapterProvider
       autoConnect={true}
+      optInWallets={["Petra"]}
       dappConfig={{
         network: NETWORK,
         // Only pass a real Shelbynet/Geomi key. Placeholders break getChainId().
@@ -28,7 +30,7 @@ export function WalletProvider({ children }: PropsWithChildren) {
         });
       }}
     >
-      {children}
+      <WalletScopedRemount>{children}</WalletScopedRemount>
     </AptosWalletAdapterProvider>
   );
 }

@@ -14,7 +14,10 @@ export const SHELBYNET_FULLNODE = "https://api.shelbynet.shelby.xyz/v1";
 /** Shelby RPC base (blob reads/writes). */
 export const SHELBYNET_RPC = "https://shelby.shelbynet.shelby.xyz/shelby";
 
-export const SHELBYNET_CHAIN_ID = 110;
+export const SHELBYNET_CHAIN_ID = 118;
+
+/** Legacy / wallet-reported chain IDs still treated as Shelbynet. */
+export const SHELBYNET_CHAIN_IDS = [110, 118] as const;
 
 export const NETWORK: WalletNetwork =
   (process.env.NEXT_PUBLIC_APP_NETWORK as WalletNetwork) ?? AptosNetwork.SHELBYNET;

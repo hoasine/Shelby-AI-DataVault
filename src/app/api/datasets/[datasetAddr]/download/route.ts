@@ -4,7 +4,10 @@
  * Streams a dataset file from Shelby to the buyer after verifying:
  *   1. A valid wallet signature over a server-issued nonce (proves the requester
  *      controls the private key for the claimed buyer address).
- *   2. On-chain access: marketplace::has_access(buyer, dataset) === true.
+ *   2. Access gate:
+ *      - Free datasets (price 0): wallet signature is sufficient.
+ *      - Paid datasets: marketplace::has_access(buyer, dataset) or seller ownership.
+ *      (On-chain free claims are skipped while Shelbynet tx simulate times out in Petra.)
  *
  * Required headers:
  *   x-buyer-address  — The buyer's Aptos address
@@ -22,6 +25,8 @@ import { Ed25519PublicKey, Ed25519Signature, AccountAddress } from "@aptos-labs/
 import { consumeNonce } from "@/lib/nonceStore";
 import { getShelbyClient, parseBlobName } from "@/lib/shelby";
 import { checkOnChainAccess, getOnChainBlobName, getAptosServerClient } from "@/lib/aptosServer";
+import { isFreePrice } from "@/lib/pricing";
+import { verifyMarketplacePaymentTx } from "@/lib/verifyPayment";
 
 export const dynamic = "force-dynamic";
 
@@ -78,6 +83,22 @@ function verifyDownloadAuth(
   return null; // success
 }
 
+async function getDatasetPriceOctas(datasetAddr: string): Promise<number | null> {
+  try {
+    const aptos = getAptosServerClient();
+    const [, , , , priceRaw] = await aptos.view({
+      payload: {
+        function: `${MODULE_ADDRESS}::dataset_registry::get_dataset_info`,
+        typeArguments: [],
+        functionArguments: [datasetAddr],
+      },
+    });
+    return Number(priceRaw);
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: { datasetAddr: string } }
@@ -103,51 +124,45 @@ export async function GET(
     return NextResponse.json({ error: authError }, { status: 401 });
   }
 
-  // ── 3. Verify on-chain access (buyer or owner) ──────────────────────────
-  let canAccess = await checkOnChainAccess(buyerAddress, datasetAddr);
+  // ── 3. Verify access ────────────────────────────────────────────────────
+  const priceOctas = await getDatasetPriceOctas(datasetAddr);
 
-  // Sellers can always download their own datasets
+  let canAccess = priceOctas !== null && isFreePrice(priceOctas);
+
   if (!canAccess) {
-    try {
-      const aptos = getAptosServerClient();
-      const [, owner] = await aptos.view({
-        payload: {
-          function: `${MODULE_ADDRESS}::dataset_registry::get_dataset_info`,
-          typeArguments: [],
-          functionArguments: [datasetAddr],
-        },
-      });
-      const ownerNorm = AccountAddress.fromString(owner as string).toString();
-      const buyerNorm = AccountAddress.fromString(buyerAddress).toString();
-      if (ownerNorm === buyerNorm) canAccess = true;
-    } catch {
-      // ignore — will fall through to 403
+    canAccess = await checkOnChainAccess(buyerAddress, datasetAddr);
+
+    if (!canAccess) {
+      try {
+        const aptos = getAptosServerClient();
+        const [, owner] = await aptos.view({
+          payload: {
+            function: `${MODULE_ADDRESS}::dataset_registry::get_dataset_info`,
+            typeArguments: [],
+            functionArguments: [datasetAddr],
+          },
+        });
+        const ownerNorm = AccountAddress.fromString(owner as string).toString();
+        const buyerNorm = AccountAddress.fromString(buyerAddress).toString();
+        if (ownerNorm === buyerNorm) canAccess = true;
+      } catch {
+        // ignore
+      }
     }
   }
 
   if (!canAccess) {
-    let priceOctas = 0;
-    try {
-      const aptos = getAptosServerClient();
-      const [, , , , priceRaw] = await aptos.view({
-        payload: {
-          function: `${MODULE_ADDRESS}::dataset_registry::get_dataset_info`,
-          typeArguments: [],
-          functionArguments: [datasetAddr],
-        },
-      });
-      priceOctas = Number(priceRaw);
-    } catch {
-      // ignore — use generic message
+    const paymentTx = req.headers.get("x-payment-tx");
+    if (paymentTx) {
+      const payErr = await verifyMarketplacePaymentTx(buyerAddress, datasetAddr, paymentTx);
+      if (!payErr) canAccess = true;
+      else return NextResponse.json({ error: payErr }, { status: 403 });
     }
+  }
 
+  if (!canAccess) {
     return NextResponse.json(
-      {
-        error:
-          priceOctas === 0
-            ? "Claim free access first — sign the Get Free Access transaction in your wallet, then download."
-            : "Access denied. Purchase this dataset first.",
-      },
+      { error: "Access denied. Pay the listed price (APT transfer) or purchase on-chain when available." },
       { status: 403 }
     );
   }

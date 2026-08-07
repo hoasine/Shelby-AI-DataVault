@@ -3,60 +3,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { DatasetCard, type Dataset } from "@/components/marketplace/DatasetCard";
 import Link from "next/link";
-import { aptosClient } from "@/utils/aptosClient";
-import { MODULE_ADDRESS } from "@/constants";
-
-function formatSize(b: number): string {
-  if (b < 1024) return `${b} B`;
-  if (b < 1048576) return `${(b / 1024).toFixed(1)} KB`;
-  if (b < 1073741824) return `${(b / 1048576).toFixed(1)} MB`;
-  return `${(b / 1073741824).toFixed(1)} GB`;
-}
-
-async function fetchAllDatasets(): Promise<Dataset[]> {
-  const aptos = aptosClient();
-  const [countRaw] = await aptos.view({
-    payload: { function: `${MODULE_ADDRESS}::dataset_registry::get_dataset_count`, typeArguments: [], functionArguments: [] },
-  });
-  const count = Number(countRaw);
-  const results: Dataset[] = [];
-
-  for (let i = 0; i < count; i++) {
-    try {
-      const [addrRaw] = await aptos.view({
-        payload: { function: `${MODULE_ADDRESS}::dataset_registry::get_dataset_address`, typeArguments: [], functionArguments: [i] },
-      });
-      const datasetAddr = addrRaw as string;
-      const resource = await aptos.getAccountResource({
-        accountAddress: datasetAddr,
-        resourceType: `${MODULE_ADDRESS}::dataset_registry::DatasetInfo`,
-      }) as {
-        name: string; description: string; owner: string;
-        size_bytes: string; price_octas: string; download_count: string;
-        is_active: boolean; tags: string[];
-      };
-
-      if (!resource.is_active) continue;
-
-      const { name, description, owner, size_bytes, price_octas, download_count } = resource;
-
-      results.push({
-        id: String(i),
-        datasetAddr,
-        name,
-        description,
-        price: Number(price_octas) / 1e8,
-        tags: [],
-        size: formatSize(Number(size_bytes)),
-        downloads: Number(download_count),
-        seller: owner.slice(0, 8) + "…" + owner.slice(-6),
-      });
-    } catch {
-      // skip unreadable datasets
-    }
-  }
-  return results;
-}
 
 export default function HomePage() {
   const [datasets, setDatasets] = useState<Dataset[]>([]);
@@ -64,7 +10,11 @@ export default function HomePage() {
   const [query,    setQuery]    = useState("");
 
   useEffect(() => {
-    fetchAllDatasets()
+    fetch("/api/datasets", { cache: "no-store" })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({ datasets: [] }));
+        return data.datasets ?? [];
+      })
       .then(setDatasets)
       .catch(() => setDatasets([]))
       .finally(() => setLoading(false));

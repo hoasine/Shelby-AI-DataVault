@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { isFreePrice } from "@/lib/pricing";
 
 export interface Dataset {
   id: string;
@@ -202,7 +203,7 @@ export function DatasetCard({ dataset, index }: { dataset: Dataset; index: numbe
           </div>
 
           {/* Price */}
-          {dataset.price === 0 ? (
+          {isFreePrice(Math.round(dataset.price * 1e8)) ? (
             <span
               style={{
                 display: "inline-flex",

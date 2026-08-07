@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { aptosClient } from "@/utils/aptosClient";
+import { signAndSubmitShelbynetTransaction } from "@/utils/submitShelbynetTransaction";
+import { isFreePrice, formatAptPrice } from "@/lib/pricing";
 import { MODULE_ADDRESS } from "@/constants";
 import { AccountAddress } from "@aptos-labs/ts-sdk";
 
@@ -27,7 +29,7 @@ function formatSize(b: number): string {
 
 export default function DatasetDetailClient() {
   const { id } = useParams<{ id: string }>();
-  const { account, signAndSubmitTransaction, signMessage } = useWallet();
+  const { account, signTransaction, signMessage } = useWallet();
   const [dataset,     setDataset]    = useState<DatasetInfo | null>(null);
   const [loading,     setLoading]    = useState(true);
   const [notFound,    setNotFound]   = useState(false);
@@ -87,28 +89,52 @@ export default function DatasetDetailClient() {
   }, [account, datasetAddr, dataset]);
 
   const handlePurchase = async () => {
-    if (!account) { setError("Connect your wallet to purchase."); return; }
+    if (!account || !dataset) { setError("Connect your wallet to purchase."); return; }
     setError(null); setPurchasing(true);
     try {
-      const res = await signAndSubmitTransaction({
-        data: {
-          function: `${MODULE_ADDRESS}::marketplace::purchase_dataset` as `${string}::${string}::${string}`,
+      if (isFreePrice(dataset.price)) {
+        setPurchased(true);
+        setHasAccess(true);
+        await handleDownload();
+        return;
+      }
+
+      // Shelbynet: purchase_dataset simulate always times out in Petra (~30s).
+      // Pay via simple APT transfer to marketplace escrow (simulate ~1s).
+      const aptos = aptosClient();
+      const [marketplaceAddr] = await aptos.view({
+        payload: {
+          function: `${MODULE_ADDRESS}::marketplace::get_marketplace_address`,
           typeArguments: [],
-          functionArguments: [datasetAddr],
+          functionArguments: [],
         },
       });
-      await aptosClient().waitForTransaction({ transactionHash: res.hash });
+
+      const pending = await signAndSubmitShelbynetTransaction(
+        account.address.toString(),
+        {
+          function: "0x1::aptos_account::transfer",
+          functionArguments: [marketplaceAddr as string, dataset.price],
+        },
+        signTransaction as Parameters<typeof signAndSubmitShelbynetTransaction>[2],
+      );
       setPurchased(true);
       setHasAccess(true);
+      await handleDownload(pending.hash);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Transaction failed");
+      const msg = e instanceof Error ? e.message : "Transaction failed";
+      if (/504|timeout|simulate|match|rejected/i.test(msg)) {
+        setError(
+          "Transaction simulation failed. On Shelbynet, use the APT transfer flow or retry in a moment.",
+        );
+      } else {
+        setError(msg);
+      }
       return;
     } finally { setPurchasing(false); }
-
-    await handleDownload();
   };
 
-  const handleDownload = async () => {
+  const handleDownload = async (paymentTxHash?: string) => {
     if (!account || !signMessage) { setError("Connect your wallet to download."); return; }
     setDownloading(true);
     setError(null);
@@ -132,6 +158,7 @@ export default function DatasetDetailClient() {
           "x-nonce":         usedNonce,
           "x-signature":     signature,
           "x-public-key":    publicKey,
+          ...(paymentTxHash ? { "x-payment-tx": paymentTxHash } : {}),
         },
       });
       if (!res.ok) {
@@ -236,9 +263,8 @@ export default function DatasetDetailClient() {
     );
   }
 
-  const isFree = dataset.price === 0;
-  // Free datasets still require on-chain purchase_dataset (0 APT) before download.
-  const canDownload = purchased || hasAccess;
+  const isFree = isFreePrice(dataset.price);
+  const canDownload = purchased || hasAccess || (isFree && !!account);
 
   return (
     <div>
@@ -486,7 +512,7 @@ export default function DatasetDetailClient() {
                     >
                       Free
                     </div>
-                    {!canDownload && (
+                    {!account && (
                       <p
                         style={{
                           marginTop: "0.75rem",
@@ -496,7 +522,7 @@ export default function DatasetDetailClient() {
                           lineHeight: 1.5,
                         }}
                       >
-                        Sign a free on-chain claim (0 APT) to unlock download.
+                        Connect your wallet and sign to download.
                       </p>
                     )}
                   </>
@@ -548,7 +574,7 @@ export default function DatasetDetailClient() {
               {/* Action button */}
               {canDownload ? (
                 <button
-                  onClick={handleDownload}
+                  onClick={() => handleDownload()}
                   disabled={downloading}
                   className="btn-primary"
                   style={{
@@ -594,16 +620,14 @@ export default function DatasetDetailClient() {
                   }}
                 >
                   {!account ? (
-                    isFree ? "Connect Wallet to Get Free Access" : "Connect Wallet to Purchase"
+                    isFree ? "Connect Wallet to Download" : "Connect Wallet to Purchase"
                   ) : purchasing ? (
                     <>
                       <span style={{ display: "inline-block", animation: "spin 0.9s linear infinite" }}>◌</span>
                       Confirming Transaction...
                     </>
-                  ) : isFree ? (
-                    "Get Free Access"
                   ) : (
-                    `Purchase for ${(dataset.price / 1e8).toFixed(2)} APT`
+                    `Pay ${formatAptPrice(dataset.price)} APT & Download`
                   )}
                 </button>
               )}
