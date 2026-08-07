@@ -32,6 +32,18 @@ import {
 } from "@shelby-protocol/sdk/node";
 import { appOrigin, SHELBYNET_FULLNODE, SHELBYNET_RPC } from "@/constants";
 
+function cleanEnv(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const cleaned = value
+    .replace(/^\uFEFF/, "")
+    .replace(/\\r\\n/g, "")
+    .replace(/\\n/g, "")
+    .replace(/[\r\n]+/g, "")
+    .trim()
+    .replace(/^["']|["']$/g, "");
+  return cleaned || undefined;
+}
+
 // Shelbynet rejects txns whose expireTimestamp is too far past ledger time.
 const TX_EXPIRE_SKEW_SECS = 25;
 
@@ -64,11 +76,11 @@ function patchFetchForShelby(origin: string) {
 
 export function getShelbyClient(): ShelbyNodeClient {
   if (!_shelbyClient) {
-    const shelbyApiKey = process.env.SHELBY_API_KEY;
+    const shelbyApiKey = cleanEnv(process.env.SHELBY_API_KEY);
     const origin = appOrigin();
     // Shelbynet currently has one activated write location. Default it so
     // production (Vercel) works even when SHELBY_LOCATION_HINT is unset.
-    const locationHint = process.env.SHELBY_LOCATION_HINT || "shelbynet-1";
+    const locationHint = cleanEnv(process.env.SHELBY_LOCATION_HINT) || "shelbynet-1";
 
     patchFetchForShelby(origin);
 
