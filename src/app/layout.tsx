@@ -3,7 +3,8 @@ import type { ReactNode } from "react";
 
 import { ReactQueryProvider } from "@/components/ReactQueryProvider";
 import { WalletProvider } from "@/components/WalletProvider";
-import { WalletAccountSync } from "@/components/WalletAccountSync";
+import { WalletAccountSync, WalletScopedRemount } from "@/components/WalletAccountSync";
+import { ClientErrorBoundary } from "@/components/ClientErrorBoundary";
 import { Toaster } from "@/components/ui/toaster";
 import { WrongNetworkAlert } from "@/components/WrongNetworkAlert";
 import { DashboardLayout } from "@/components/layout";
@@ -29,7 +30,11 @@ export default function RootLayout({
           <ReactQueryProvider>
             <WalletAccountSync />
             <DashboardLayout>
-              <div id="root">{children}</div>
+              <ClientErrorBoundary>
+                <WalletScopedRemount>
+                  <div id="root">{children}</div>
+                </WalletScopedRemount>
+              </ClientErrorBoundary>
             </DashboardLayout>
             <WrongNetworkAlert />
             <Toaster />

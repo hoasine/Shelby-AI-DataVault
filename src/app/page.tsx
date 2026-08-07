@@ -111,7 +111,7 @@ export default function HomePage() {
                 <strong style={{ color: "var(--accent-primary)", fontWeight: 600 }}>
                   Now on Shelbynet.
                 </strong>{" "}
-                Marketplace and blob storage run on Shelby Protocol&apos;s Shelbynet (chain ID 110).
+                Marketplace and blob storage run on Shelby Protocol&apos;s Shelbynet (chain ID 118).
                 Connect your wallet to Shelbynet to list, buy, and download datasets.
               </p>
             </div>
