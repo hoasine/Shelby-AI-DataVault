@@ -30,7 +30,9 @@ import { verifyMarketplacePaymentTx } from "@/lib/verifyPayment";
 
 export const dynamic = "force-dynamic";
 
-const MODULE_ADDRESS = process.env.NEXT_PUBLIC_MODULE_ADDRESS ?? "";
+const MODULE_ADDRESS = (process.env.NEXT_PUBLIC_MODULE_ADDRESS ?? "")
+  .replace(/[\r\n]+/g, "")
+  .trim();
 
 // The fixed message text used in signMessage — must match the frontend exactly.
 const SIGN_MESSAGE_TEXT = "Shelby AI DataVault download auth";

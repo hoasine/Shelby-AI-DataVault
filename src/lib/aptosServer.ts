@@ -24,7 +24,9 @@ export function getAptosServerClient(): Aptos {
   return _aptos;
 }
 
-const MODULE_ADDRESS = process.env.NEXT_PUBLIC_MODULE_ADDRESS ?? "";
+const MODULE_ADDRESS = (process.env.NEXT_PUBLIC_MODULE_ADDRESS ?? "")
+  .replace(/[\r\n]+/g, "")
+  .trim();
 
 /**
  * Calls the `marketplace::has_access` view function on-chain.

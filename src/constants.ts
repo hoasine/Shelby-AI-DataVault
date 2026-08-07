@@ -3,9 +3,12 @@ import type { Network as WalletNetwork } from "@aptos-labs/wallet-adapter-react"
 
 function publicEnv(value: string | undefined): string | undefined {
   if (!value) return undefined;
+  // Strip CRLF / quotes accidentally introduced by PowerShell `vercel env add`.
+  const cleaned = value.replace(/^\uFEFF/, "").replace(/[\r\n]+/g, "").trim().replace(/^["']|["']$/g, "");
+  if (!cleaned) return undefined;
   // Treat common placeholders as unset so they don't break Aptos API calls.
-  if (/(\.\.\.|YOUR_|CHANGE_ME|xxx)/i.test(value)) return undefined;
-  return value;
+  if (/(\.\.\.|YOUR_|CHANGE_ME|xxx)/i.test(cleaned)) return undefined;
+  return cleaned;
 }
 
 /** Shelbynet coordination-layer fullnode (Aptos-compatible). Marketplace + blobs live here. */

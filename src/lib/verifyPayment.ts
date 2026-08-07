@@ -5,7 +5,9 @@ import {
 import { getAptosServerClient } from "@/lib/aptosServer";
 import { isFreePrice } from "@/lib/pricing";
 
-const MODULE_ADDRESS = process.env.NEXT_PUBLIC_MODULE_ADDRESS ?? "";
+const MODULE_ADDRESS = (process.env.NEXT_PUBLIC_MODULE_ADDRESS ?? "")
+  .replace(/[\r\n]+/g, "")
+  .trim();
 
 /** Returns marketplace escrow address from chain. */
 export async function getMarketplaceAddress(): Promise<string> {

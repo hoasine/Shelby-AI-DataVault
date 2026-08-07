@@ -1,6 +1,8 @@
 import type { Aptos } from "@aptos-labs/ts-sdk";
 
-const MODULE_ADDRESS = process.env.NEXT_PUBLIC_MODULE_ADDRESS ?? "";
+const MODULE_ADDRESS = (process.env.NEXT_PUBLIC_MODULE_ADDRESS ?? "")
+  .replace(/[\r\n]+/g, "")
+  .trim();
 
 export type DatasetListItem = {
   id: string;
