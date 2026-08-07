@@ -1,5 +1,8 @@
 "use client";
 
+// Must run before wallet adapter constructs Aptos Connect (calls getChainId).
+import "@/utils/patchAptosGetChainId";
+
 // Internal components
 import { useToast } from "@/components/ui/use-toast";
 // Internal constants
