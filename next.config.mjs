@@ -1,11 +1,13 @@
 import withPWAInit from "@ducanh2912/next-pwa";
 
+// PWA caching caused production white-screens after deploys (stale chunks).
+// Keep the plugin installed but disabled until we need offline support again.
 const withPWA = withPWAInit({
-  disable: false,
+  disable: true,
 });
 
-// Your Next config is automatically typed!
-export default withPWA({
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   // output: export removed — project uses server-side API routes for Shelby integration.
 
   // Prevent webpack from bundling the Shelby SDK on the server side.
@@ -39,4 +41,6 @@ export default withPWA({
     };
     return config;
   },
-});
+};
+
+export default withPWA(nextConfig);
